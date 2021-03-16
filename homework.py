@@ -14,9 +14,10 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='program.log', 
+    filename='program.log',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
 )
+
 
 def parse_homework_status(homework):
     try:
@@ -29,18 +30,20 @@ def parse_homework_status(homework):
         verdict = 'К сожалению в работе нашлись ошибки.'
         return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
     elif current_homework_status == 'reviewing':
-        return f'Работу взяли на проверку'
+        return 'Работу взяли на проверку'
     elif current_homework_status == 'approved':
-        verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+        verdict = 'Ревьюеру всё понравилось, '\
+            'можно приступать к следующему уроку.'
         return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
     else:
         logging.exception("Can't get homework status")
+
 
 def get_homework_statuses(current_timestamp):
     headers = {
         'Authorization': f'OAuth {PRAKTIKUM_TOKEN}',
     }
-    params ={
+    params = {
         'from_date': current_timestamp
     }
     URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
@@ -56,15 +59,17 @@ def send_message(message, bot_client):
 
 
 def main():
-    bot=telegram.Bot(token=TELEGRAM_TOKEN)# проинициализировать бота здесь
+    telegram.Bot(token=TELEGRAM_TOKEN)  # проинициализировать бота здесь
     current_timestamp = int(time.time())  # начальное значение timestamp
 
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
-                send_message(parse_homework_status(new_homework.get('homeworks')[0]))
-            current_timestamp = new_homework.get('current_date', current_timestamp)  # обновить timestamp
+                send_message(
+                    parse_homework_status(new_homework.get('homeworks')[0]))
+            current_timestamp = new_homework.get(
+                'current_date', current_timestamp)  # обновить timestamp
             time.sleep(300)  # опрашивать раз в пять минут
 
         except Exception as e:
