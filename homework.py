@@ -24,22 +24,26 @@ def parse_homework_status(homework):
         homework_name = homework['homework_name']
         current_homework_status = homework['status']
     except KeyError:
-        logging.exception("Can't get homework status")
+        logging.exception('Cant get homework status')
         return 'Возникла ошибка'
-    if current_homework_status == 'rejected':
-        verdict = 'К сожалению в работе нашлись ошибки.'
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
-    elif current_homework_status == 'reviewing':
-        return 'Работу взяли на проверку'
-    elif current_homework_status == 'approved':
-        verdict = 'Ревьюеру всё понравилось, '\
-            'можно приступать к следующему уроку.'
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    homework_statuses = {
+        'rejected': f'У вас проверили работу "{homework_name}"!\n\n'\
+            f'К сожалению в работе нашлись ошибки.',
+        'approved': f'У вас проверили работу "{homework_name}"!\n\n'\
+            f'Ревьюеру всё понравилось, '\
+            f'можно приступать к следующему уроку.',
+        'reviewing': 'Работу взяли на проверку'
+    }
+    if current_homework_status in homework_statuses:
+        return f'{homework_statuses[current_homework_status]}'
     else:
         logging.exception("Can't get homework status")
 
 
 def get_homework_statuses(current_timestamp):
+    homework_statuses = {}
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
     headers = {
         'Authorization': f'OAuth {PRAKTIKUM_TOKEN}',
     }
@@ -59,7 +63,7 @@ def send_message(message, bot_client):
 
 
 def main():
-    telegram.Bot(token=TELEGRAM_TOKEN)  # проинициализировать бота здесь
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)  # проинициализировать бота здесь
     current_timestamp = int(time.time())  # начальное значение timestamp
 
     while True:
@@ -67,7 +71,7 @@ def main():
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
                 send_message(
-                    parse_homework_status(new_homework.get('homeworks')[0]))
+                    parse_homework_status(new_homework.get('homeworks')[0]), bot)
             current_timestamp = new_homework.get(
                 'current_date', current_timestamp)  # обновить timestamp
             time.sleep(300)  # опрашивать раз в пять минут
