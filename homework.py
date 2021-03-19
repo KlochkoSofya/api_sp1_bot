@@ -74,11 +74,11 @@ def main():
                     new_homework.get('homeworks')[0]), bot)
             current_timestamp = new_homework.get(
                 'current_date', current_timestamp)  # обновить timestamp
-            # time.sleep(300)  # опрашивать раз в пять минут
+            time.sleep(300)  # опрашивать раз в пять минут
 
         except Exception as e:
             print(f'Бот столкнулся с ошибкой: {e}')
-            # time.sleep(5)
+            time.sleep(5)
 
 
 if __name__ == '__main__':
